@@ -1,0 +1,64 @@
+# Go --------------------------------------------------------------------------------
+
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+bin/*
+*.test
+*.out
+vendor/
+
+go.work
+go.work.sum
+
+.idea/
+.vscode/
+
+.DS_Store
+Thumbs.db
+
+*.log
+*.xls
+
+build
+dist
+coverage
+
+# Data files
+*.sqlite
+
+# Frontend / Vue / Vite -----------------------------------------------------------
+
+frontend/node_modules/
+frontend/dist/
+
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+frontend/.vite/
+
+# Wails ---------------------------------------------------------------------------
+
+frontend/wailsjs/
+
+build/bin/
+dist/
+
+tmp/
+temp/
+
+# Optional local configs ----------------------------------------------------------
+
+.env
+.env.local
+.env.*.local
+
+_environments/*.yaml
+_environments/*.yml
+
+
