@@ -21,8 +21,8 @@ func (r *Registry) Register(module Module) {
 }
 
 func (r *Registry) RegisterHTTP(mux *http.ServeMux) {
-	mux.HandleFunc("/api/modules", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
+	mux.HandleFunc("/api/modules", func(w http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodGet {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"log"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -18,6 +19,7 @@ import (
 )
 
 // Wails needs embedded frontend assets for production builds.
+//
 //go:embed all:frontend/dist
 var assets embed.FS
 
@@ -58,14 +60,18 @@ func (a *App) startHTTPServer() {
 		mux := http.NewServeMux()
 		registry.RegisterHTTP(mux)
 
+		listener, err := net.Listen("tcp", "127.0.0.1:34116")
+		if err != nil {
+			log.Fatalf("HTTP backend listen failed: %v", err)
+		}
+
 		a.server = &http.Server{
-			Addr:    "127.0.0.1:34116",
 			Handler: appcore.WithLocalDevCORS(mux),
 		}
 
 		go func() {
 			log.Println("Go HTTP backend: http://127.0.0.1:34116")
-			if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			if err := a.server.Serve(listener); err != nil && err != http.ErrServerClosed {
 				log.Printf("HTTP backend error: %v", err)
 			}
 		}()
