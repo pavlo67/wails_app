@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"embed"
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
 	"time"
+
+	"wails-vue-go/backend/appcore"
+	"wails-vue-go/backend/logadapter"
+	"wails-vue-go/backend/modules/filepanel"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -20,15 +22,12 @@ import (
 var assets embed.FS
 
 type App struct {
-	ctx context.Context
-
+	ctx        context.Context
 	server     *http.Server
 	serverOnce sync.Once
 }
 
-func NewApp() *App {
-	return &App{}
-}
+func NewApp() *App { return &App{} }
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
@@ -42,39 +41,26 @@ func (a *App) shutdown(ctx context.Context) {
 
 	stopCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-
 	_ = a.server.Shutdown(stopCtx)
 }
 
 func (a *App) startHTTPServer() {
 	a.serverOnce.Do(func() {
+		logger := logadapter.New("wails_app")
+		registry := appcore.NewRegistry()
+
+		filePanelModule, err := filepanel.NewFromStartup(logger)
+		if err != nil {
+			log.Fatalf("filepanel init failed: %v", err)
+		}
+		registry.Register(filePanelModule)
+
 		mux := http.NewServeMux()
-
-		mux.HandleFunc("/api/hello", func(w http.ResponseWriter, r *http.Request) {
-			allowLocalDev(w)
-
-			if r.Method == http.MethodOptions {
-				w.WriteHeader(http.StatusNoContent)
-				return
-			}
-
-			if r.Method != http.MethodGet {
-				http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-				return
-			}
-
-			fmt.Println("GET /api/hello")
-
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			_ = json.NewEncoder(w).Encode(map[string]string{
-				"message": "Привіт із Go backend!!!",
-				"time":    time.Now().Format(time.RFC3339),
-			})
-		})
+		registry.RegisterHTTP(mux)
 
 		a.server = &http.Server{
 			Addr:    "127.0.0.1:34116",
-			Handler: mux,
+			Handler: appcore.WithLocalDevCORS(mux),
 		}
 
 		go func() {
@@ -86,17 +72,11 @@ func (a *App) startHTTPServer() {
 	})
 }
 
-func allowLocalDev(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
-
 func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:  "Wails Vue Go Hello",
+		Title:  "Wails File Panel",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
