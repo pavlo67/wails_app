@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"embed"
+	"github.com/pavlo67/base_go/lib/logger"
+	"github.com/pavlo67/base_go/lib/logger/logger_zap"
 	"log"
 	"net"
 	"net/http"
@@ -10,7 +12,6 @@ import (
 	"time"
 
 	"wails-vue-go/backend/appcore"
-	"wails-vue-go/backend/logadapter"
 	"wails-vue-go/backend/modules/filepanel"
 
 	"github.com/wailsapp/wails/v2"
@@ -48,12 +49,18 @@ func (a *App) shutdown(ctx context.Context) {
 
 func (a *App) startHTTPServer() {
 	a.serverOnce.Do(func() {
-		logger := logadapter.New("wails_app")
-		registry := appcore.NewRegistry()
-
-		filePanelModule, err := filepanel.NewFromStartup(logger)
+		var loggerConfig logger.Config
+		l, err := logger_zap.New(loggerConfig)
 		if err != nil {
 			log.Fatalf("filepanel init failed: %v", err)
+		}
+
+		// l := logadapter.New("wails_app")
+		registry := appcore.NewRegistry()
+
+		filePanelModule, err := filepanel.NewFromStartup(l)
+		if err != nil {
+			l.Fatalf("filepanel init failed: %v", err)
 		}
 		registry.Register(filePanelModule)
 
@@ -62,7 +69,7 @@ func (a *App) startHTTPServer() {
 
 		listener, err := net.Listen("tcp", "127.0.0.1:34116")
 		if err != nil {
-			log.Fatalf("HTTP backend listen failed: %v", err)
+			l.Fatalf("HTTP backend listen failed: %v", err)
 		}
 
 		a.server = &http.Server{
@@ -70,9 +77,9 @@ func (a *App) startHTTPServer() {
 		}
 
 		go func() {
-			log.Println("Go HTTP backend: http://127.0.0.1:34116")
+			l.Info("Go HTTP backend: http://127.0.0.1:34116")
 			if err := a.server.Serve(listener); err != nil && err != http.ErrServerClosed {
-				log.Printf("HTTP backend error: %v", err)
+				l.Info("HTTP backend error: %v", err)
 			}
 		}()
 	})

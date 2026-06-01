@@ -1,3 +1,35 @@
+# Configs ----------------------------------------------------------
+
+.env
+.env.local
+.env.*.local
+
+_envs/*.yaml
+_envs/*.yml
+
+# tools -----------------------------------------------------------------------------
+
+.idea/
+.vscode/
+.agents/
+.codex/
+.DS_Store
+Thumbs.db
+
+# JS --------------------------------------------------------------------------------
+
+frontend/wailsjs/
+
+frontend/node_modules/
+frontend/dist/
+
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+frontend/.vite/
+
 # Go --------------------------------------------------------------------------------
 
 *.exe
@@ -14,51 +46,22 @@ vendor/
 go.work
 go.work.sum
 
-.idea/
-.vscode/
+build/*
+coverage
 
-.DS_Store
-Thumbs.db
+
+# Data, logs, temporary files -------------------------------------------------------
 
 *.log
 *.xls
 
-build
-dist
-coverage
-
-# Data files
 *.sqlite
-
-# Frontend / Vue / Vite -----------------------------------------------------------
-
-frontend/node_modules/
-frontend/dist/
-
-frontend/npm-debug.log*
-frontend/yarn-debug.log*
-frontend/yarn-error.log*
-frontend/pnpm-debug.log*
-
-frontend/.vite/
-
-# Wails ---------------------------------------------------------------------------
-
-frontend/wailsjs/
-
-build/bin/
-dist/
 
 tmp/
 temp/
+dist/
 
-# Optional local configs ----------------------------------------------------------
 
-.env
-.env.local
-.env.*.local
 
-_environments/*.yaml
-_environments/*.yml
 
 
